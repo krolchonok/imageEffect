@@ -2,22 +2,27 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Интерактивные эффекты</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
         }
-
+        html {
+            height: 100%;
+        }
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
+            
+            height: 100%;
             background: #f8f9fa;
             color: #333;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: center; /* Центрирует main-container если он имеет max-width */
         }
 
         header {
@@ -26,6 +31,7 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0; /* Предотвращает сжатие хедера */
         }
 
         h1 {
@@ -41,6 +47,9 @@
             margin: 30px;
             max-width: 1200px;
             width: 100%;
+            /* height: 90%; -- Удалено, flex-grow будет управлять высотой */
+            flex-grow: 1; /* Занимает доступное пространство */
+            overflow-y: auto; /* Позволяет скроллить содержимое, если оно больше */
         }
 
         .image-container {
@@ -50,6 +59,8 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
         }
 
         .controls-container {
@@ -61,13 +72,17 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
+            height: 100%; /* Сохраняем для desktop flex layout, чтобы .controls мог расти */
+            max-height: calc(100vh - 100px); /* Ограничение высоты для desktop, чтобы помещался на экран */
         }
+
 
         .file-input-container {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 20px;
+            flex-shrink: 0;
         }
 
         .visually-hidden {
@@ -90,13 +105,13 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: calc(100% - 150px);
+            max-width: calc(100% - 150px); /* Рассчитывается от ширины родителя */
         }
 
         canvas {
             display: block;
             max-width: 100%;
-            max-height: 500px;
+            /* max-height: 500px; -- Заменено на flex для image-container */
             width: auto;
             height: auto;
             margin-left: auto;
@@ -104,16 +119,21 @@
             border-radius: 8px;
             margin-bottom: 20px;
             background: #eee;
+            object-fit: contain; /* Для сохранения пропорций, если задана высота */
+            flex-grow: 1; /* Позволяет canvas занимать доступное место в image-container */
+            min-height: 150px; /* Минимальная высота для пустого canvas */
         }
 
+
         .controls {
-            max-height: 350px;
+            flex-grow: 1; /* Позволяет блоку растягиваться */
             overflow-y: auto;
-            padding-right: 10px;
+            padding-right: 10px; /* Для полосы прокрутки */
             border: 1px solid #eee;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+            min-height: 300px; /* Минимальная высота */
         }
 
         .controls label {
@@ -142,7 +162,8 @@
             display: flex;
             justify-content: space-between;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 10px; /* Отодвигает от .controls */
+            flex-shrink: 0;
         }
 
         .btn {
@@ -171,10 +192,11 @@
         }
 
         .presets-container {
-            margin-top: 20px;
+            margin-top: auto; /* Прижимаем к низу controls-container */
             border: 1px solid #eee;
             padding: 15px;
             border-radius: 8px;
+            flex-shrink: 0; /* Запрещаем уменьшение */
         }
 
         .presets-row {
@@ -182,9 +204,141 @@
             gap: 10px;
             margin-top: 10px;
         }
+        .presets-row:first-of-type {
+            margin-top: 0; /* Убираем верхний отступ у первого ряда кнопок */
+        }
+        .presets-container h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
 
         .preset-btn {
             flex: 1;
+        }
+
+        /* --- Стили для мобильных устройств --- */
+        @media (max-width: 768px) {
+            body {
+                height: auto; /* Позволяем body расти по контенту */
+                align-items: stretch; /* Растягиваем .main-container на всю ширину */
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+
+            .main-container {
+                flex-direction: column;
+                align-items: stretch; /* Растягиваем дочерние элементы */
+                margin: 15px;
+                gap: 15px;
+                flex-grow: 0; /* Убираем растягивание, высота по контенту */
+                height: auto;
+                overflow-y: visible; /* Скролл на уровне body */
+                max-width: 100%; /* Убираем ограничение по ширине для мобильных */
+            }
+
+            .image-container,
+            .controls-container {
+                min-width: 100%;
+                width: 100%;
+                flex: none; /* Убираем flex-grow/shrink поведение от родителя */
+                max-height: none; /* Сбрасываем max-height для controls-container */
+            }
+            
+            .controls-container {
+                height: auto; /* Высота по контенту */
+            }
+
+            .file-input-container {
+                flex-direction: column;
+                align-items: stretch; /* Растягиваем кнопку выбора файла */
+                gap: 10px;
+            }
+            .btn-file-upload {
+                width: 100%;
+                text-align: center;
+            }
+            .file-name-display {
+                max-width: 100%;
+                text-align: center;
+                margin-top: 5px;
+            }
+
+            canvas {
+                max-height: 60vh; /* Ограничиваем высоту холста на мобильных */
+                margin-bottom: 15px;
+                flex-grow: 0; /* Canvas не должен сильно растягиваться, если изображение маленькое */
+                aspect-ratio: attr(width) / attr(height); /* Попытка сохранить пропорции, если JS установит атрибуты */
+            }
+            .image-container canvas { /* Более специфичный селектор для canvas в image-container */
+                 min-height: 200px; /* Убедимся, что у canvas есть минимальная высота */
+            }
+
+
+            .controls {
+                padding-right: 5px;
+                min-height: 200px; /* Можно уменьшить мин. высоту для мобильных */
+            }
+
+            .controls label {
+                flex-direction: column; /* Текст над инпутом */
+                align-items: flex-start; /* Выравнивание по левому краю */
+                gap: 6px;
+                font-size: 14px;
+            }
+
+            .controls input[type="range"],
+            .controls select,
+            .controls input[type="color"] {
+                width: 100%; /* Инпуты на всю ширину */
+            }
+
+            .button-row {
+                 /* flex-direction: column; -- Можно раскомментировать, если кнопки не помещаются */
+                 /* gap: 8px; */
+            }
+            /* Если кнопки слишком широкие, можно сделать их в столбик */
+            /* .button-row .btn {
+                width: 100%;
+            } */
+            
+            .presets-row {
+                 /* flex-direction: column; -- Можно раскомментировать, если кнопки не помещаются */
+                 /* gap: 8px; */
+            }
+             /* .presets-row .preset-btn {
+                width: 100%;
+            } */
+        }
+
+        @media (max-width: 480px) { /* Для очень маленьких экранов */
+            header h1 {
+                font-size: 18px;
+            }
+            .main-container {
+                margin: 10px;
+                gap: 10px;
+            }
+            .controls label {
+                font-size: 13px;
+            }
+            .btn, .btn-secondary {
+                padding: 10px 12px; /* Немного больше вертикального padding */
+                font-size: 13px;
+            }
+            .button-row, .presets-row { /* Кнопки в столбик */
+                flex-direction: column;
+                gap: 8px;
+            }
+            .button-row .btn, .presets-row .btn { 
+                width: 100%; /* Кнопки на всю ширину в столбике */
+            }
+            .presets-container h3 {
+                font-size: 16px;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -355,7 +509,7 @@
                 date.setTime(date.getTime() + (days*24*60*60*1000));
                 expires = "; expires=" + date.toUTCString();
             }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax"; // Added SameSite
         }
 
         function getCookie(name) {
@@ -409,7 +563,6 @@
             try {
                 const data = JSON.parse(presetData);
                 
-                // Устанавливаем значения из пресета
                 pixelSlider.value = data.pixelSlider;
                 posterizeSlider.value = data.posterizeSlider;
                 crtCheckbox.checked = data.crtCheckbox;
@@ -437,6 +590,7 @@
                 alert(`Пресет ${presetNum} загружен!`);
             } catch (e) {
                 alert(`Ошибка загрузки пресета ${presetNum}: ${e.message}`);
+                console.error("Preset load error:", e);
             }
         }
 
@@ -447,6 +601,11 @@
             } else {
                 fileNameDisplay.textContent = 'Файл не выбран';
                 originalImage = null;
+                // Сброс canvas при удалении файла
+                canvas.width = canvas.width; // Очистка
+                canvas.removeAttribute("width"); // Удаляем атрибуты, чтобы CSS мог управлять размером
+                canvas.removeAttribute("height");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 updateCanvas(); return;
             }
             const reader = new FileReader();
@@ -454,12 +613,18 @@
                 const img = new Image();
                 img.onload = () => {
                     originalImage = img;
+                     // Устанавливаем атрибуты для aspect-ratio CSS
+                    canvas.setAttribute('width', img.width);
+                    canvas.setAttribute('height', img.height);
                     resetSettings(); updateCanvas();
                 };
                 img.onerror = () => {
                     console.error("Ошибка загрузки изображения.");
                     fileNameDisplay.textContent = 'Ошибка загрузки';
-                    originalImage = null; updateCanvas();
+                    originalImage = null; 
+                    canvas.removeAttribute("width");
+                    canvas.removeAttribute("height");
+                    updateCanvas();
                 };
                 img.src = event.target.result;
             };
@@ -474,7 +639,9 @@
             slightBlurSlider, ntscArtifactsCheckbox, ntscIntensitySlider, barrelDistortionSlider
         ].forEach(control =>
             control.addEventListener('input', () => {
-                requestAnimationFrame(updateCanvas);
+                if (originalImage) { // Обновляем только если есть изображение
+                    requestAnimationFrame(updateCanvas);
+                }
             })
         );
 
@@ -486,32 +653,26 @@
                     else element.value = defaultSettings[key];
                 }
             }
-            requestAnimationFrame(updateCanvas);
+            if (originalImage) { // Обновляем только если есть изображение
+                 requestAnimationFrame(updateCanvas);
+            } else { // Если изображения нет, просто отображаем placeholder
+                updateCanvas();
+            }
+        }
+        
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
         }
 
-        // Helper: Get pixel from (x,y) in imageData
-        function getPixel(imgData, x, y, width) {
-            x = Math.max(0, Math.min(x, width - 1));
-            y = Math.max(0, Math.min(y, imgData.height - 1));
-            const i = (y * width + x) * 4;
-            return [imgData.data[i], imgData.data[i+1], imgData.data[i+2], imgData.data[i+3]];
-        }
-        
-        // Helper: Set pixel in imageData
-        function setPixel(imgData, x, y, width, r, g, b, a) {
-            const i = (y * width + x) * 4;
-            imgData.data[i] = r;
-            imgData.data[i+1] = g;
-            imgData.data[i+2] = b;
-            imgData.data[i+3] = a !== undefined ? a : 255;
-        }
-        
-        // Helper: Color distance
         function colorDistanceSq(r1, g1, b1, r2, g2, b2) {
             return (r1 - r2)**2 + (g1 - g2)**2 + (b1 - b2)**2;
         }
         
-        // Helper: Find closest color in palette
         function findClosestPaletteColor(r, g, b, currentPalette) {
             let closestColor = currentPalette[0];
             let minDistanceSq = colorDistanceSq(r, g, b, closestColor[0], closestColor[1], closestColor[2]);
@@ -524,23 +685,25 @@
             }
             return closestColor;
         }
-        
-        // Helper: Hex to RGB
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
 
         function updateCanvas() {
             if (!originalImage) {
+                // Используем CSS размеры canvas, если атрибуты не заданы
+                const displayWidth = canvas.clientWidth || 300;
+                const displayHeight = canvas.clientHeight || 150;
+                
+                // Устанавливаем внутренний размер canvas равным отображаемому, если он еще не установлен
+                if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                    canvas.width = displayWidth;
+                    canvas.height = displayHeight;
+                }
+                
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                if (canvas.width === 0 || canvas.height === 0) { canvas.width = 300; canvas.height = 150; }
-                ctx.fillStyle = "#ddd"; ctx.fillRect(0,0,canvas.width, canvas.height);
-                ctx.fillStyle = "#777"; ctx.textAlign = "center"; ctx.font = "16px Inter";
+                ctx.fillStyle = "#ddd"; 
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.fillStyle = "#777"; 
+                ctx.textAlign = "center"; 
+                ctx.font = "16px Inter";
                 ctx.fillText("Загрузите изображение", canvas.width/2, canvas.height/2);
                 return;
             }
@@ -548,31 +711,42 @@
             const W_orig = originalImage.width;
             const H_orig = originalImage.height;
             
-            const MAX_BUFFER_WIDTH = 800; const MAX_BUFFER_HEIGHT = 600;
-            let bufferWidth = W_orig; let bufferHeight = H_orig;
+            // Определяем максимальный размер буфера (для производительности)
+            // Можно использовать размеры контейнера canvas как ориентир для макс. разрешения
+            const canvasContainer = canvas.parentElement;
+            const MAX_BUFFER_WIDTH = Math.min(1200, canvasContainer.clientWidth > 0 ? canvasContainer.clientWidth * 1.5 : W_orig); // x1.5 для запаса качества
+            const MAX_BUFFER_HEIGHT = Math.min(1000, canvasContainer.clientHeight > 0 ? canvasContainer.clientHeight * 1.5 : H_orig);
+
+            let bufferWidth = W_orig; 
+            let bufferHeight = H_orig;
             const aspectRatio = W_orig / H_orig;
 
             if (bufferWidth > MAX_BUFFER_WIDTH || bufferHeight > MAX_BUFFER_HEIGHT) {
                 if ((bufferWidth / MAX_BUFFER_WIDTH) > (bufferHeight / MAX_BUFFER_HEIGHT)) {
-                    bufferWidth = MAX_BUFFER_WIDTH; bufferHeight = bufferWidth / aspectRatio;
+                    bufferWidth = MAX_BUFFER_WIDTH; 
+                    bufferHeight = bufferWidth / aspectRatio;
                 } else {
-                    bufferHeight = MAX_BUFFER_HEIGHT; bufferWidth = bufferHeight * aspectRatio;
+                    bufferHeight = MAX_BUFFER_HEIGHT; 
+                    bufferWidth = bufferHeight * aspectRatio;
                 }
             }
+            // Устанавливаем атрибуты и внутренний размер canvas
             canvas.width = Math.max(1, Math.round(bufferWidth));
             canvas.height = Math.max(1, Math.round(bufferHeight));
+            // Также устанавливаем атрибуты для CSS aspect-ratio
+            canvas.setAttribute('width', canvas.width);
+            canvas.setAttribute('height', canvas.height);
             
             const CW = canvas.width;
             const CH = canvas.height;
 
-            // --- 0. Pixelation (via temporary canvas) ---
             ctx.imageSmoothingEnabled = false; 
             const pixelFactor = +pixelSlider.value;
             const pixelationDownscale = Math.max(1, 100 / pixelFactor);
             
             const tmpCanvas = document.createElement('canvas');
             const tmpCtx = tmpCanvas.getContext('2d', { willReadFrequently: true }); 
-            tmpCtx.imageSmoothingEnabled = (pixelationDownscale === 1);
+            tmpCtx.imageSmoothingEnabled = (pixelationDownscale <= 1.5); // Небольшое сглаживание при малом даунскейле
             
             tmpCanvas.width = Math.max(1, Math.round(CW / pixelationDownscale));
             tmpCanvas.height = Math.max(1, Math.round(CH / pixelationDownscale));
@@ -583,43 +757,46 @@
             let imageData = ctx.getImageData(0, 0, CW, CH);
             let data = imageData.data;
 
-            // --- Barrel Distortion ---
             const barrelStrength = +barrelDistortionSlider.value / 1000;
             if (barrelStrength > 0) {
                 const k1 = barrelStrength * 10;
                 const copyData = new Uint8ClampedArray(data);
+                const centerX = CW / 2;
+                const centerY = CH / 2;
+                const maxRadiusSq = centerX * centerX + centerY * centerY;
+
                 for (let y = 0; y < CH; y++) {
                     for (let x = 0; x < CW; x++) {
-                        const normX = (2 * x / CW) - 1;
-                        const normY = (2 * y / CH) - 1;
-                        const rSq = normX * normX + normY * normY;
+                        const normX = (x - centerX) / centerX;
+                        const normY = (y - centerY) / centerY;
+                        const rSqUnscaled = (x - centerX)*(x - centerX) + (y - centerY)*(y - centerY);
+                        const rSq = rSqUnscaled / maxRadiusSq; // Normalize radius for consistent effect
+                        
                         let srcX, srcY;
-                        if (rSq < 1) {
+                        if (rSq < 1) { // Apply only within a circle to avoid extreme edge distortion
                             const distortion = 1 + k1 * rSq;
                             const srcNormX = normX / distortion;
                             const srcNormY = normY / distortion;
-                            srcX = Math.round((srcNormX + 1) * CW / 2);
-                            srcY = Math.round((srcNormY + 1) * CH / 2);
+                            srcX = Math.round(srcNormX * centerX + centerX);
+                            srcY = Math.round(srcNormY * centerY + centerY);
                         } else {
                             srcX = x; srcY = y;
                         }
                         
+                        const destIdx = (y * CW + x) * 4;
                         if (srcX >= 0 && srcX < CW && srcY >= 0 && srcY < CH) {
                             const srcIdx = (srcY * CW + srcX) * 4;
-                            const destIdx = (y * CW + x) * 4;
                             data[destIdx] = copyData[srcIdx];
                             data[destIdx + 1] = copyData[srcIdx + 1];
                             data[destIdx + 2] = copyData[srcIdx + 2];
                             data[destIdx + 3] = copyData[srcIdx + 3];
                         } else {
-                             const destIdx = (y * CW + x) * 4;
-                             data[destIdx] = data[destIdx+1] = data[destIdx+2] = 0; data[destIdx+3] = 255;
+                             data[destIdx] = data[destIdx+1] = data[destIdx+2] = 0; data[destIdx+3] = 255; // Fill with black if out of bounds
                         }
                     }
                 }
             }
 
-            // --- Palette Reduction & Dithering ---
             const selectedPaletteKey = paletteSelect.value;
             const selectedDithering = ditheringSelect.value;
             const ditherStrength = +ditherStrengthSlider.value / 255;
@@ -627,7 +804,7 @@
             if (selectedPaletteKey !== 'none') {
                 const currentPalette = palettes[selectedPaletteKey];
                 let bayerMatrix, bayerSize;
-                if (selectedDithering.startsWith('bayer')) {
+                if (selectedDithering.startsWith('bayer') && bayerMatrices[selectedDithering]) {
                     bayerMatrix = bayerMatrices[selectedDithering];
                     bayerSize = bayerMatrix.length;
                 }
@@ -646,37 +823,33 @@
                     }
                     
                     const closest = findClosestPaletteColor(r, g, b, currentPalette);
-                    data[i] = closest[0];
-                    data[i+1] = closest[1];
-                    data[i+2] = closest[2];
+                    data[i] = closest[0]; data[i+1] = closest[1]; data[i+2] = closest[2];
                 }
             }
             
-            // --- Monochrome / Tint ---
             if (monoTintCheckbox.checked) {
                 const tintRgb = hexToRgb(tintColorSelect.value);
                 if (tintRgb) {
                     for (let i = 0; i < data.length; i += 4) {
                         const luma = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-                        data[i]   = Math.min(255, luma * (tintRgb.r / 255) * 2);
+                        data[i]   = Math.min(255, luma * (tintRgb.r / 255) * 2); // x2 factor can be adjusted for brightness
                         data[i+1] = Math.min(255, luma * (tintRgb.g / 255) * 2);
                         data[i+2] = Math.min(255, luma * (tintRgb.b / 255) * 2);
                     }
                 }
             }
 
-            // --- Posterize ---
             const posterizeLevel = +posterizeSlider.value;
-            if (posterizeLevel < defaultSettings.posterizeSlider && selectedPaletteKey === 'none') {
-                const binSize = 255 / Math.max(1, posterizeLevel);
+            if (posterizeLevel < defaultSettings.posterizeSlider && selectedPaletteKey === 'none') { // Apply only if no palette
+                const numLevels = Math.max(1, posterizeLevel);
+                const binSize = 256 / numLevels; // 256 to include 255 properly
                 for (let i = 0; i < data.length; i += 4) {
-                    data[i] = Math.floor(data[i] / binSize) * binSize;
-                    data[i+1] = Math.floor(data[i+1] / binSize) * binSize;
-                    data[i+2] = Math.floor(data[i+2] / binSize) * binSize;
+                    data[i]   = Math.min(255, Math.floor(data[i] / binSize) * binSize + binSize/2); // Center of bin
+                    data[i+1] = Math.min(255, Math.floor(data[i+1] / binSize) * binSize + binSize/2);
+                    data[i+2] = Math.min(255, Math.floor(data[i+2] / binSize) * binSize + binSize/2);
                 }
             }
 
-            // --- CRT Lines ---
             if (crtCheckbox.checked) {
                 for (let y = 0; y < CH; y += 2) {
                     for (let x = 0; x < CW; x++) {
@@ -686,7 +859,6 @@
                 }
             }
             
-            // --- Color Shift (Old) ---
             if (shiftCheckbox.checked) {
                 const offset = 2; 
                 const prevDataShift = new Uint8ClampedArray(data);
@@ -695,13 +867,16 @@
                         const i = (y * CW + x) * 4;
                         const redSrcX = Math.min(CW - 1, x + offset);
                         const redSrcIdx = (y * CW + redSrcX) * 4;
-                        data[i] = prevDataShift[redSrcIdx];
-                        data[i+2] = prevDataShift[i+2];
+                        const blueSrcX = Math.max(0, x - offset);
+                        const blueSrcIdx = (y * CW + blueSrcX) * 4;
+
+                        data[i]   = prevDataShift[redSrcIdx];     // Red channel from shifted right
+                        // data[i+1] keeps its green value
+                        data[i+2] = prevDataShift[blueSrcIdx + 2]; // Blue channel from shifted left
                     }
                 }
             }
 
-            // --- Chromatic Aberration ---
             const caAmount = +chromaticAberrationSlider.value;
             if (caAmount > 0) {
                 const prevDataCA = new Uint8ClampedArray(data);
@@ -710,13 +885,12 @@
                     const y = Math.floor((i / 4) / CW);
                     const rIndex = (y * CW + Math.min(CW - 1, x + caAmount)) * 4;
                     const bIndex = (y * CW + Math.max(0, x - caAmount)) * 4;
-                    data[i] = prevDataCA[rIndex];
-                    data[i+1] = prevDataCA[i + 1];
-                    data[i+2] = prevDataCA[bIndex + 2];
+                    data[i] = prevDataCA[rIndex]; // Red
+                    data[i+1] = prevDataCA[i + 1];   // Green
+                    data[i+2] = prevDataCA[bIndex + 2]; // Blue
                 }
             }
             
-            // --- Row Shift (Scanline Displacement) ---
             const rowShiftMax = +rowShiftSlider.value;
             if (rowShiftMax > 0) {
                 const prevDataRowShift = new Uint8ClampedArray(data);
@@ -724,101 +898,125 @@
                 for (let y = 0; y < CH; y++) {
                     const shift = Math.floor((Math.random() - 0.5) * 2 * rowShiftMax);
                     if (shift === 0) continue;
+                    
                     const rowIndex = y * CW * 4;
-                    for (let x = 0; x < CW; x++) {
-                        const srcIdx = rowIndex + x * 4;
-                        tempRow[x*4]=prevDataRowShift[srcIdx]; tempRow[x*4+1]=prevDataRowShift[srcIdx+1];
-                        tempRow[x*4+2]=prevDataRowShift[srcIdx+2]; tempRow[x*4+3]=prevDataRowShift[srcIdx+3];
+                    // Copy original row to tempRow
+                    for (let x_col = 0; x_col < CW; x_col++) {
+                        const srcIdx = rowIndex + x_col * 4;
+                        tempRow[x_col*4]   = prevDataRowShift[srcIdx];
+                        tempRow[x_col*4+1] = prevDataRowShift[srcIdx+1];
+                        tempRow[x_col*4+2] = prevDataRowShift[srcIdx+2];
+                        tempRow[x_col*4+3] = prevDataRowShift[srcIdx+3];
                     }
-                    for (let x = 0; x < CW; x++) {
-                        const targetX = (x - shift + CW) % CW;
-                        const targetIdx = rowIndex + x * 4;
-                        const srcIdxTemp = targetX * 4;
-                        data[targetIdx] = tempRow[srcIdxTemp]; data[targetIdx+1] = tempRow[srcIdxTemp+1];
-                        data[targetIdx+2] = tempRow[srcIdxTemp+2]; data[targetIdx+3] = tempRow[srcIdxTemp+3];
+                    // Write shifted row from tempRow back to data
+                    for (let x_col = 0; x_col < CW; x_col++) {
+                        const targetXOriginal = (x_col - shift); // Where this pixel *came from* in original
+                        let srcXShifted = (x_col - shift + CW*1000) % CW; // Ensure positive for modulo
+                        
+                        const targetIdx = rowIndex + x_col * 4;
+                        const srcIdxTemp = srcXShifted * 4;
+
+                        data[targetIdx]   = tempRow[srcIdxTemp];
+                        data[targetIdx+1] = tempRow[srcIdxTemp+1];
+                        data[targetIdx+2] = tempRow[srcIdxTemp+2];
+                        data[targetIdx+3] = tempRow[srcIdxTemp+3];
                     }
                 }
             }
 
-            // --- Simple Edge Detection ---
             const edgeThreshold = +edgeDetectionSlider.value;
             if (edgeThreshold > 0) {
                 const prevDataEdge = new Uint8ClampedArray(data);
-                const edgeOutput = new Uint8ClampedArray(data.length);
+                // For edge detection, usually better to output to a new buffer or make non-edge pixels transparent/original
                 for (let y = 1; y < CH - 1; y++) {
                     for (let x = 1; x < CW - 1; x++) {
                         const i = (y * CW + x) * 4;
-                        const luma = (px) => 0.299*px[0] + 0.587*px[1] + 0.114*px[2];
+                        const luma = (r,g,b) => 0.299*r + 0.587*g + 0.114*b;
                         
-                        const currentLuma = luma([prevDataEdge[i], prevDataEdge[i+1], prevDataEdge[i+2]]);
-                        const rightLuma = luma([prevDataEdge[i+4], prevDataEdge[i+5], prevDataEdge[i+6]]);
-                        const bottomIdx = ((y+1)*CW + x)*4;
-                        const bottomLuma = luma([prevDataEdge[bottomIdx], prevDataEdge[bottomIdx+1], prevDataEdge[bottomIdx+2]]);
+                        const currentLuma = luma(prevDataEdge[i], prevDataEdge[i+1], prevDataEdge[i+2]);
+                        
+                        const gx = 
+                            -luma(prevDataEdge[((y-1)*CW + (x-1))*4], prevDataEdge[((y-1)*CW + (x-1))*4+1], prevDataEdge[((y-1)*CW + (x-1))*4+2])
+                            -2*luma(prevDataEdge[(y*CW + (x-1))*4], prevDataEdge[(y*CW + (x-1))*4+1], prevDataEdge[(y*CW + (x-1))*4+2])
+                            -luma(prevDataEdge[((y+1)*CW + (x-1))*4], prevDataEdge[((y+1)*CW + (x-1))*4+1], prevDataEdge[((y+1)*CW + (x-1))*4+2])
+                            +luma(prevDataEdge[((y-1)*CW + (x+1))*4], prevDataEdge[((y-1)*CW + (x+1))*4+1], prevDataEdge[((y-1)*CW + (x+1))*4+2])
+                            +2*luma(prevDataEdge[(y*CW + (x+1))*4], prevDataEdge[(y*CW + (x+1))*4+1], prevDataEdge[(y*CW + (x+1))*4+2])
+                            +luma(prevDataEdge[((y+1)*CW + (x+1))*4], prevDataEdge[((y+1)*CW + (x+1))*4+1], prevDataEdge[((y+1)*CW + (x+1))*4+2]);
+                        
+                        const gy =
+                            -luma(prevDataEdge[((y-1)*CW + (x-1))*4], prevDataEdge[((y-1)*CW + (x-1))*4+1], prevDataEdge[((y-1)*CW + (x-1))*4+2])
+                            -2*luma(prevDataEdge[((y-1)*CW + x)*4], prevDataEdge[((y-1)*CW + x)*4+1], prevDataEdge[((y-1)*CW + x)*4+2])
+                            -luma(prevDataEdge[((y-1)*CW + (x+1))*4], prevDataEdge[((y-1)*CW + (x+1))*4+1], prevDataEdge[((y-1)*CW + (x+1))*4+2])
+                            +luma(prevDataEdge[((y+1)*CW + (x-1))*4], prevDataEdge[((y+1)*CW + (x-1))*4+1], prevDataEdge[((y+1)*CW + (x-1))*4+2])
+                            +2*luma(prevDataEdge[((y+1)*CW + x)*4], prevDataEdge[((y+1)*CW + x)*4+1], prevDataEdge[((y+1)*CW + x)*4+2])
+                            +luma(prevDataEdge[((y+1)*CW + (x+1))*4], prevDataEdge[((y+1)*CW + (x+1))*4+1], prevDataEdge[((y+1)*CW + (x+1))*4+2]);
 
-                        const diff = Math.abs(currentLuma - rightLuma) + Math.abs(currentLuma - bottomLuma);
-                        if (diff > edgeThreshold) {
-                            edgeOutput[i] = edgeOutput[i+1] = edgeOutput[i+2] = 255; edgeOutput[i+3] = 255;
+                        const magnitude = Math.sqrt(gx*gx + gy*gy);
+                        if (magnitude > edgeThreshold) { // Edge threshold is now 0-255 essentially
+                            data[i] = data[i+1] = data[i+2] = 255; // White edges
                         } else {
-                            edgeOutput[i] = edgeOutput[i+1] = edgeOutput[i+2] = 0; edgeOutput[i+3] = 255;
+                            data[i] = data[i+1] = data[i+2] = 0;   // Black non-edges
                         }
+                        // data[i+3] = 255; // Alpha
                     }
                 }
-                 for(let i=0; i < data.length; i++) data[i] = edgeOutput[i];
             }
             
-            // --- NTSC Artifacts (Simplified horizontal color bleed/shift) ---
             const ntscIntensity = +ntscIntensitySlider.value;
             if (ntscArtifactsCheckbox.checked && ntscIntensity > 0) {
                 const prevDataNtsc = new Uint8ClampedArray(data);
-                const shiftR = Math.floor(ntscIntensity / 4);
-                const shiftB = -Math.floor(ntscIntensity / 4);
+                // NTSC-like horizontal color bleed/shift (simplified)
+                const phaseShift = Math.PI / 3; // Approx 60 degrees for YIQ-like components
                 for (let y = 0; y < CH; y++) {
                     for (let x = 0; x < CW; x++) {
                         const i = (y * CW + x) * 4;
-                        const rSrcX = Math.max(0, Math.min(CW - 1, x + (y % 2 === 0 ? shiftR : -shiftR)));
-                        const bSrcX = Math.max(0, Math.min(CW - 1, x + (y % 2 === 0 ? shiftB : -shiftB)));
+                        // Modulate based on horizontal position and intensity
+                        const modulation = Math.sin(x * (ntscIntensity / 100) + y * 0.1); // y*0.1 adds slight diagonal crawl
                         
+                        const rSrcX = Math.max(0, Math.min(CW - 1, x + Math.round(modulation * 2))); // Shift R
+                        const bSrcX = Math.max(0, Math.min(CW - 1, x - Math.round(modulation * 1))); // Shift B oppositely
+
                         const rSrcIdx = (y * CW + rSrcX) * 4;
                         const bSrcIdx = (y * CW + bSrcX) * 4;
 
-                        data[i] = prevDataNtsc[rSrcIdx];
-                        data[i+1] = prevDataNtsc[i+1];
-                        data[i+2] = prevDataNtsc[bSrcIdx+2];
+                        data[i]   = prevDataNtsc[rSrcIdx];     // Shifted Red
+                        data[i+1] = prevDataNtsc[i+1];         // Green (less affected or reference)
+                        data[i+2] = prevDataNtsc[bSrcIdx + 2]; // Shifted Blue
                     }
                 }
             }
 
-            // --- Slight Blur (Box Blur) ---
             const blurRadius = +slightBlurSlider.value;
-            if (blurRadius > 0) {
+            if (blurRadius > 0) { // Simple Box Blur
                 const prevDataBlur = new Uint8ClampedArray(data);
-                if (blurRadius === 1) {
-                     for (let y = 0; y < CH; y++) {
-                        for (let x = 0; x < CW; x++) {
-                            let rSum = 0, gSum = 0, bSum = 0, count = 0;
-                            for (let dy = -1; dy <= 1; dy++) {
-                                for (let dx = -1; dx <= 1; dx++) {
-                                    const curX = x + dx;
-                                    const curY = y + dy;
-                                    if (curX >= 0 && curX < CW && curY >= 0 && curY < CH) {
-                                        const sIdx = (curY * CW + curX) * 4;
-                                        rSum += prevDataBlur[sIdx];
-                                        gSum += prevDataBlur[sIdx+1];
-                                        bSum += prevDataBlur[sIdx+2];
-                                        count++;
-                                    }
+                const kernelSize = blurRadius * 2 + 1;
+                const halfKernel = blurRadius;
+
+                for (let y = 0; y < CH; y++) {
+                    for (let x = 0; x < CW; x++) {
+                        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+                        for (let dy = -halfKernel; dy <= halfKernel; dy++) {
+                            for (let dx = -halfKernel; dx <= halfKernel; dx++) {
+                                const curX = x + dx;
+                                const curY = y + dy;
+                                if (curX >= 0 && curX < CW && curY >= 0 && curY < CH) {
+                                    const sIdx = (curY * CW + curX) * 4;
+                                    rSum += prevDataBlur[sIdx];
+                                    gSum += prevDataBlur[sIdx+1];
+                                    bSum += prevDataBlur[sIdx+2];
+                                    count++;
                                 }
                             }
-                            const dIdx = (y * CW + x) * 4;
-                            data[dIdx]   = rSum / count;
-                            data[dIdx+1] = gSum / count;
-                            data[dIdx+2] = bSum / count;
                         }
+                        const dIdx = (y * CW + x) * 4;
+                        data[dIdx]   = rSum / count;
+                        data[dIdx+1] = gSum / count;
+                        data[dIdx+2] = bSum / count;
                     }
                 }
             }
 
-            // --- Screen Grid ---
+
             if (screenGridCheckbox.checked) {
                 const gridSize = +screenGridSizeSlider.value;
                 const gridOpacity = +screenGridOpacitySlider.value / 100;
@@ -826,42 +1024,46 @@
                     for (let x = 0; x < CW; x++) {
                         if (x % gridSize === 0 || y % gridSize === 0) {
                             const i = (y * CW + x) * 4;
-                            data[i]   = data[i]   * (1 - gridOpacity);
-                            data[i+1] = data[i+1] * (1 - gridOpacity);
-                            data[i+2] = data[i+2] * (1 - gridOpacity);
+                            data[i]   = data[i]   * (1 - gridOpacity) + 0 * gridOpacity; // Blend with black
+                            data[i+1] = data[i+1] * (1 - gridOpacity) + 0 * gridOpacity;
+                            data[i+2] = data[i+2] * (1 - gridOpacity) + 0 * gridOpacity;
                         }
                     }
                 }
             }
             
-            // --- Noise ---
             const noiseLevel = +noiseSlider.value;
             if (noiseLevel > 0) {
-                const noiseAmount = noiseLevel * 2.55; 
+                const noiseAmount = noiseLevel * 2.55; // Max noise of 255
                 for (let i = 0; i < data.length; i += 4) {
                     const noise = (Math.random() - 0.5) * noiseAmount;
-                    data[i] = Math.min(255,Math.max(0,data[i]+noise)); data[i+1]=Math.min(255,Math.max(0,data[i+1]+noise)); data[i+2]=Math.min(255,Math.max(0,data[i+2]+noise));
+                    data[i] = Math.min(255,Math.max(0,data[i]+noise)); 
+                    data[i+1]=Math.min(255,Math.max(0,data[i+1]+noise)); 
+                    data[i+2]=Math.min(255,Math.max(0,data[i+2]+noise));
                 }
             }
 
-            // --- Film Grain ---
-            const filmGrainAmount = +filmGrainSlider.value;
+            const filmGrainAmount = +filmGrainSlider.value; // More subtle than noise
             if (filmGrainAmount > 0) {
                 for (let i = 0; i < data.length; i += 4) {
                     const grain = (Math.random() - 0.5) * filmGrainAmount;
-                    data[i] = Math.min(255,Math.max(0,data[i]+grain)); data[i+1]=Math.min(255,Math.max(0,data[i+1]+grain)); data[i+2]=Math.min(255,Math.max(0,data[i+2]+grain));
+                    data[i] = Math.min(255,Math.max(0,data[i]+grain)); 
+                    data[i+1]=Math.min(255,Math.max(0,data[i+1]+grain)); 
+                    data[i+2]=Math.min(255,Math.max(0,data[i+2]+grain));
                 }
             }
 
-            // --- Bad Pixels ---
             const badPixelsPercent = +badPixelsSlider.value / 1000;
             if (badPixelsPercent > 0) {
                 const numBadPixels = Math.floor(CW * CH * badPixelsPercent);
                 for (let k = 0; k < numBadPixels; k++) {
-                    const px = Math.floor(Math.random()*CW); const py = Math.floor(Math.random()*CH);
+                    const px = Math.floor(Math.random()*CW); 
+                    const py = Math.floor(Math.random()*CH);
                     const i = (py * CW + px) * 4;
-                    if (Math.random() < 0.7) { data[i]=data[i+1]=data[i+2]=0; } 
-                    else { data[i]=Math.random()>0.5?255:Math.random()*100; data[i+1]=Math.random()>0.5?255:Math.random()*100; data[i+2]=Math.random()>0.5?255:Math.random()*100;}
+                    const type = Math.random();
+                    if (type < 0.6) { data[i]=data[i+1]=data[i+2]=0; } // Dead pixel
+                    else if (type < 0.9) { data[i]=255; data[i+1]=0; data[i+2]=0; } // Stuck red
+                    else { data[i]=0; data[i+1]=255; data[i+2]=0; } // Stuck green etc.
                 }
             }
 
@@ -871,13 +1073,14 @@
         function saveImage() {
             if (!originalImage) { alert("Сначала загрузите изображение."); return; }
             const link = document.createElement('a');
-            link.download = 'retro-edited-image.png';
+            const fileNameBase = originalImage.name ? originalImage.name.split('.')[0] : 'image';
+            link.download = `${fileNameBase}-retro-edited.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         }
 
-        resetSettings();
-        updateCanvas();
+        // Initial placeholder draw
+        resetSettings(); // This will call updateCanvas which handles the no-image case
     </script>
 </body>
 </html>
